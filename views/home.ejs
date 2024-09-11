@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head') %>
+    <title>Homepage</title>
+    <style>
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0.75rem 0.75rem 0 0;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        .message-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Full viewport height */
+        }
+        .message {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #6c757d;
+        }
+        .message a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .message a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <%- include('./partials/nav') %>
+
+    <% if (locals.user) { %>
+    <div class="container mt-4">
+        <h2 class="mb-4 text-center">Recent Blogs</h2>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          <% blogs.forEach(blog => { %>
+          <div class="col">
+            <div class="card">
+              <img src="<%= blog.coverImageURL %>" class="card-img-top" alt="Blog Cover Image" />
+              <div class="card-body">
+                <h5 class="card-title"><%= blog.title %></h5>
+                <a href="/blog/<%= blog._id %>" class="btn btn-primary">View</a>
+              </div>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+    </div>
+    <% } else { %>
+    <div class="message-container">
+        <div class="message">
+            <p>Please <a href="/user/signin">sign in</a> to view and add blogs.</p>
+            <p>If you don't have an account, you can <a href="/user/signup">create one here</a>.</p>
+        </div>
+    </div>
+    <% } %>
+
+    <%- include('./partials/scripts') %>
+</body>
+</html>
