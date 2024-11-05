@@ -46,7 +46,6 @@ userSchema.pre('save',function(next){
 
     this.salt=salt;
     this.password=hashedpassword;
-
     next();
 })
 
@@ -70,10 +69,6 @@ userSchema.static("matchPassword",async function(email,password){
     const token=createTokenForUser(user);
     return token;
 })
-
-
-
-
 
 const User=mongoose.model("user",userSchema);
 

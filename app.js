@@ -13,10 +13,14 @@ const mongoose=require("mongoose");
 
 const app=express();
 const port=process.env.PORT||8000;
-
+console.log(process.env.MONGO_URL)
 mongoose
-.connect(process.env.MONGO_URL)
-.then((e)=>console.log("mongodb connected"));
+.connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+.then((e)=>console.log("mongodb connected")).catch((e)=>console.log(e));
+
 app.set("view engine","ejs");
 
 app.set("views",path.resolve("./views"));
