@@ -1,30 +1,22 @@
 const { Router } = require("express");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
-const path = require("path");
-const fs = require("fs");
+const streamifier = require("streamifier");
 require("dotenv").config();
 
-// Cloudinary configuration using environment variables
-cloudinary.config({
-  cloud_name:'dyal33uk3',
-  api_key: '982289125571571',
-  api_secret: 'a9-cSilRYsKvfLV48_D2sXRwPuw',
-});
 const Blog = require("../models/blog");
 const Comment = require("../models/comments");
 const router = Router();
 
-// Configure multer for disk storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+// Cloudinary configuration using environment variables
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Configure multer to store files in memory
+const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
@@ -35,11 +27,6 @@ const upload = multer({
     }
   },
 });
-
-// Ensure uploads directory exists
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
-}
 
 router.get("/add-new", (req, res) => {
   return res.render("addBlog", {
@@ -91,16 +78,19 @@ router.post("/", upload.single("coverImage"), async (req, res) => {
   }
 
   try {
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "blogs",
-    });
-
-    // Delete local file
-    fs.unlink(req.file.path, (err) => {
-      if (err) {
-        console.error("File deletion error:", err);
-      }
+    // Stream the file buffer to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: "blogs" },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+      streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
     });
 
     // Create blog post
